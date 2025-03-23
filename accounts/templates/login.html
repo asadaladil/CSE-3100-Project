@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %} 
+{% load crispy_forms_tags %}
+{% block title %}Log In{% endblock %} 
+
+{% block content %}
+{% if not request.user.is_authenticated %}
+{% if messages %}
+{% for msg in messages %}
+<p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
+    {{ msg }}
+</p>
+{% endfor %}
+{% endif %}
+<table style="margin:auto; width:70%">
+    <tr>
+        <td>
+            <img src="{% static 'images/logo.png' %}"/>
+        </td>
+        <td>
+            <form method="post" enctype="multipart/form-data" action='/accounts/login/'>
+                {% csrf_token %}
+                {{forms | crispy}} 
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-success mt-3">Sign In</button>
+                </div>
+                <br>
+               
+            
+        </form>
+        <p>Don't have an account? <a type="submit" class="btn btn-primary ms-3" href="/accounts/register/">Sign Up</a></p>
+    </td>
+    </tr>
+</table>
+
+
+<script>
+document.getElementById('id_Check').addEventListener('change', function() 
+{
+    const pass3Field = document.getElementById('id_Password');
+    if (this.checked) 
+    {
+        pass3Field.type = 'text';
+    } 
+    else 
+    {
+        pass3Field.type = 'password';
+    }
+});
+function hideButton() {
+    // Hide the button but keep its space
+    document.getElementById("signup").style.visibility = "hidden";
+    document.getElementById("signin").style.visibility = "hidden";
+  }
+hideButton();
+</script>
+{% endif %}
+{% endblock %}

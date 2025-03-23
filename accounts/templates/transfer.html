@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Fund Transfer{% endblock %} 
+{% load crispy_forms_tags %}
+{% block content %}
+{% if request.user.is_authenticated %}
+<table style="margin:auto; width:70%">
+    <tr>
+        <td>
+            <form method="post" enctype="multipart/form-data" action='/accounts/transfer/'>
+                {% csrf_token %}
+                 <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1 1 45%;">{{ forms.Account | as_crispy_field }}</div>  
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.Amount | as_crispy_field }}</div>     
+                    {% if messages %}
+                    {% for msg in messages %}
+                    <p style="background-color: #a4361f; color: blach; padding: 10px; border-radius: 5px;">
+                        {{ msg }}
+                    </p>
+                    {% endfor %}
+                    {% endif %}
+    
+            </div> 
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-primary mt-3">Transfer Fund</button>
+                </div>
+        </form>
+        </td>
+        <td>
+            <img src="{% static 'images/logo.png' %}"/>
+        </td>
+    </tr>
+</table>
+{% endif %}
+{% endblock %}

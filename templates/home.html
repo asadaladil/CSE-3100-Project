@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Home{% endblock %} 
+
+{% block content %}
+{% if messages %}
+{% for msg in messages %}
+<p style="background-color: green; color: blach; padding: 10px; border-radius: 5px;">
+    {{ msg }}
+</p>
+{% endfor %}
+{% endif %}
+<table style="margin:auto; width:90% ">
+    <tr>
+        <td>
+            <img class ="rounded-2xl" src="{% static 'images/logo.png' %}"/>
+        </td>
+        
+        <td>
+            <h1 class="font-bold text-4xl my-4">Welcome to MyExpense</h1>
+            <p class="leading-normal mb-4">
+                Manage Your Finances with Ease!<br>
+
+                Welcome to MyExpense Web Application, the ultimate solution for tracking your daily expenses, 
+                budgeting, and financial planning. Our intuitive and user-friendly platform helps you monitor 
+                your spending habits and manage your money efficiently.<br>
+                
+                🌟 Features at a Glance<br><br>
+                ✔ Easy Expense Logging – Add your daily expenses with just a few clicks.<br>
+                ✔ Categorized Spending – Organize expenses by categories like Food, Travel, Shopping, Bills, and more.<br>
+                ✔ Interactive Dashboard – Get an overview of your spending trends through real-time charts and analytics.<br>
+                ✔ Multi-Device Access – Track your expenses anytime, anywhere, from your desktop, tablet, or smartphone.<br>
+                ✔ Reports & Insights – Generate monthly financial reports to make informed decisions.<br>
+                ✔ Secure & Private – Your financial data is encrypted and protected with top-notch security.<br>
+                
+               
+            </p>
+            
+            
+            
+        </td>
+    </tr>
+    {% if not request.user.is_authenticated %}
+    <tr>
+        <td>
+            <p class="leading-normal mb-4">
+                📊 How It Works?<br>
+                1️⃣ Sign Up – Create a free account in seconds.<br>
+                2️⃣ Add Expenses – Record your transactions and categorize them.<br>
+                3️⃣ Track & Analyze – View reports, trends, and set financial goals.<br>
+                4️⃣ Stay on Budget – Get reminders and alerts to keep your expenses in check.<br><br>
+                
+                
+            </p>
+        </td>
+        <td>
+            💡 Start your journey to better financial management today! Sign up now and take control of your expenses effortlessly.<br><br>
+                
+            🚀 Join thousands of users who are making smarter financial choices with MyExpense<br>
+            <div style="text-align: center; font-family:Arial ">
+                <a type="button" class="btn btn-primary mt-3 me-3" href="/accounts/register/">Sign Up</a>
+                <a type="submit" class="btn btn-success mt-3" href="/accounts/login/">Sign In</a>
+            </div>
+        </div>
+        </td>
+    </tr>
+    {% else %}
+
+    {% endif %}
+</table>
+{% endblock %}

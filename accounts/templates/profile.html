@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Profile{% endblock %} 
+{% load crispy_forms_tags %}
+{% block content %}
+{% if request.user.is_authenticated %}
+<table style="margin:auto; width:65%">
+    <tr>
+        <td>
+            <p><h3 style="font-family:Arial;">Account No- {{id}}</h3></p>
+            <h3 style="font-family:Arial;">Full Name- {{name}}</h3>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form method="post" enctype="multipart/form-data" action='/accounts/profile/'>
+                {% csrf_token %}
+                <p><h4 style="font-family:Arial;text-align:center;">Personal Information</h4></p> 
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1 1 45%;">{{ forms1.first_name | as_crispy_field }}</div>  
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms1.last_name | as_crispy_field }}</div>
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms2.phone | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms1.email | as_crispy_field }}</div> 
+                  </div> 
+                 <div style="flex: 1 1 45%;">{{ forms2.File | as_crispy_field }}</div> 
+                 <h4 style="font-family:Arial;text-align:center;">Personal Address</h4>
+                 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1 1 45%;">{{ forms2.Country | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms2.city | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms2.Address | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms2.postal | as_crispy_field }}</div> 
+                    <br>
+                 </div>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-warning mt-3">Update Changes</button>
+                </div>
+            </form>
+            </td>
+        
+    </tr>
+    
+</table>
+
+{% endif %}
+{% endblock %}

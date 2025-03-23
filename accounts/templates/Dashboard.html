@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Dashboard{% endblock %} 
+
+{% block content %}
+{% if request.user.is_authenticated %}
+{% if messages %}
+    {% for msg in messages %}
+    <p style="background-color: green; color: black; padding: 10px; border-radius: 5px;">
+        {{ msg }}
+    </p>
+    {% endfor %}
+    {% endif %}
+    
+{% endif %}
+{% endblock %}

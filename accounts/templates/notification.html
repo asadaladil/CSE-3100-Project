@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Notifications{% endblock %} 
+{% load crispy_forms_tags %}
+{% block content %}
+{% if request.user.is_authenticated %}
+{% if note %}
+<p><h3>{{note}} New Notifications:</h3></p>
+<table style="margin:auto; width:70%; text-align:center" class="table table-bordered border-success">
+    <tr>
+        <th>Date-Time</th>
+        <th>Description</th>
+        <th>Amount</th>
+    </tr>
+    {% for i in new_note %}
+</tr>
+    {% for j in i %}
+
+        <td>{{j}}</td>
+
+    {% endfor %}
+</tr>
+    {% endfor %}
+</table>
+
+{% else %}
+<p><h6>No New Notification</h6></p>
+<p><h3>Previous {{prv}} Notifications:</h3></p>
+<table style="margin:auto; width:70%; text-align:center" class="table table-bordered border-success">
+    <tr>
+        <th>Date-Time</th>
+        <th>Description</th>
+        <th>Amount</th>
+    </tr>
+    {% for i in notes %}
+</tr>
+    {% for j in i %}
+
+        <td>{{j}}</td>
+
+    {% endfor %}
+</tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+{% endblock %}

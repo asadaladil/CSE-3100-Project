@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% load static %} 
+{% block title %}Registration{% endblock %} 
+{% load crispy_forms_tags %}
+{% block content %}
+{% if not request.user.is_authenticated %}
+<h2 style="font-family:Lucida Calligraphy;">Registration Form</h2>
+<table style="margin:auto; width:65%">
+    <tr>
+        <td>
+        <p>Already Have an account?<a type="submit" class="btn btn-primary ms-3" href="/accounts/login/">Sign In</a> 
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form method="post" enctype="multipart/form-data" action='/accounts/register/'>
+                {% csrf_token %}
+                <p><h4 style="font-family:Arial;text-align:center;">Personal Information</h4></p> 
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1 1 45%;">{{ forms.first_name | as_crispy_field }}</div>  
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.last_name | as_crispy_field }}</div>
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.phone | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.email | as_crispy_field }}</div> 
+                  </div> 
+                 <div style="flex: 1 1 45%;">{{ forms.File | as_crispy_field }}</div> 
+                 <h4 style="font-family:Arial;text-align:center;">Personal Address</h4>
+                 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1 1 45%;">{{ forms.Country | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.city | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.Address | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.postal | as_crispy_field }}</div> 
+                    <br>
+                 </div>
+                 <h4 style="font-family:Arial;text-align:center;">Password Set</h4>
+                 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="flex: 1 1 45%;">{{ forms.password1 | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.password2 | as_crispy_field }}</div> 
+                    <br>
+                    <div style="flex: 1 1 45%;">{{ forms.Check | as_crispy_field }}</div> 
+                    <br> 
+                 </div>  
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-success mt-3">Register</button>
+                </div>
+            </form>
+            </td>
+        
+    </tr>
+    
+</table>
+
+<script src="{% static 'JavaScript/showpass.js' %}"></script>
+<script>
+    function hideButton() {
+        // Hide the button but keep its space
+        document.getElementById("signup").style.visibility = "hidden";
+        document.getElementById("signin").style.visibility = "hidden";
+      }
+    hideButton();
+</script>
+{% endif %}
+{% endblock %}
