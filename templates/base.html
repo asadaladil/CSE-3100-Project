@@ -42,17 +42,26 @@
                   Statements
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Income Statements</a></li>
-                  <li><a class="dropdown-item" href="#">Cost Statements</a></li>
-                  <li><a class="dropdown-item" href="#">Monthy Statements</a></li>
+                  <li><a class="dropdown-item" href="/accounts/istatements/">Income Statements</a></li>
+                  <li><a class="dropdown-item" href="/accounts/cstatements/">Cost Statements</a></li>
+                  <li><a class="dropdown-item" href="/accounts/statements/">All Statements</a></li>
                 </ul>
               </li>
-              <li class="nav-item me-5">
-                <a class="nav-link" href="#">Delete Account</a>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle me-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Settings
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Change Password</a></li>
+                  <li><a class="dropdown-item" href="#">Delete Account</a></li>
+                </ul>
               </li>
               <a type="button" class="btn btn-primary" href="/accounts/notifications/">
                 Notifications <span class="badge text-bg-secondary">{{ notify }}</span>
               </a>
+              <li class="nav-item">
+                <h4 class="nav-link ms-3 me-5">A/C- {{request.user.username}}</h4>
+              </li>
               <a class="btn btn-outline-danger ms-5" type="submit" href="/accounts/Logout/">Sign Out</a>
           {% else %}
           <div   class="ms-5"></div>

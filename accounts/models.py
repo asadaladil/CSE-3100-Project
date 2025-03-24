@@ -21,13 +21,9 @@ class UserRegisterModel(models.Model):
 
 class TransactionModel(models.Model):
     user=models.OneToOneField(User,related_name='Transactions',on_delete=models.CASCADE)
-    statement=models.JSONField(default=list
-        # Date=models.DateTimeField(auto_now_add=True),
-        # Description=models.CharField(max_length=30),
-        # tran_type=models.CharField(max_length=20),
-        # Amount=models.IntegerField(),
-        # left_balance=models.IntegerField()
-        )
+    statement=models.JSONField(default=list)
+    cash=models.DecimalField(max_digits=20,decimal_places=2,default=0)
+    bank=models.DecimalField(max_digits=20,decimal_places=2,default=0)
     
     def __str__(self):
         name=self.user.first_name+' '+self.user.last_name

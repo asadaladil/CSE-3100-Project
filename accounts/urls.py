@@ -13,4 +13,7 @@ urlpatterns = [
     path('transaction/',views.transaction),
     path('transfer/',views.FundTransfer),
     path('notifications/',views.notification),
+    path('cstatements/',views.cost),
+    path('istatements/',views.income),
+    path('statements/',views.alls),
 ]

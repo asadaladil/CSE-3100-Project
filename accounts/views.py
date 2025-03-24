@@ -1,9 +1,5 @@
-
-from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render,redirect
-from django.urls import reverse_lazy
 from django.contrib import messages
 from .forms import *
 from .models import *
@@ -15,6 +11,7 @@ def note(id):
     return (UserRegisterModel.objects.get(user_id=id).notify[0][0])
 def set_message(user_nm,ac_no2,amt):
     acc=UserRegisterModel.objects.all()
+    acc2=TransactionModel.objects.all()
     for i in acc:
         if i.user.username==ac_no2:
             i.notify[0][0]+=1
@@ -26,7 +23,22 @@ def set_message(user_nm,ac_no2,amt):
                 i.notify.pop(1)
             i.save()
             break
+    for i in acc2:
+        if i.user.username==ac_no2:
+            i.bank+=int(amt)
+            i.statement.append(set_statement(i,'Check Received',amt))
+            if len(i.statement)>30:
+                i.statement.pop(0)
+            i.save()
+            break
     return
+
+def set_statement(acc,type,amnt):
+    a=str(time.ctime())
+    b=type
+    c=amnt
+    d=f"Bank Balance-->TK {acc.bank}\nCash Balance-->TK {acc.cash}"
+    return [a,b,c,d]
 
 # Create your views here.
 def register(request):
@@ -125,11 +137,39 @@ def transaction(request):
         if request.method == 'POST':
             form = TransactionForm(request.POST)
             if form.is_valid():
+                acc=TransactionModel.objects.get(user_id=request.user.id)
+                temp=form.cleaned_data['type']
+                money=int(request.POST.get('Amount'))
+                if temp=='Check Deposit':
+                    acc.bank+=money
+                if temp=='Cash Deposit' and acc.cash>money:
+                    if acc.cash<money:
+                        messages.error(request,f"You don't have enough Cash to deposit TK-{money} !!")
+                        return redirect('/accounts/transaction/')    
+                    acc.bank+=money
+                    acc.cash-=money
+                if temp=='Cash Withdraw':
+                    if acc.bank<money:
+                        messages.error(request,f"You don't have enough Bank Balance to Withdraw TK-{money} !!")
+                        return redirect('/accounts/transaction/')
+                    acc.bank-=money
+                    acc.cash+=money
+                if temp=='Cash Income':
+                    acc.cash+=money
+                if temp=='Cash Expense':
+                    if acc.cash<money:
+                        messages.error(request,f"You don't have enough Cash to Expense TK-{money} !!")
+                        return redirect('/accounts/transaction/')
+                    acc.cash-=money
+                acc.statement.append(set_statement(acc,temp,money))
+                if len(acc.statement)>30:
+                    acc.statement.pop(0)
+                acc.save()
                 messages.success(request,"Transaction is Successfully DONE!!")
                 return redirect('/accounts/dashboard/')
             else:
                 messages.error(request,form.errors)
-                return redirect('/accounts/transfer/')
+                return redirect('/accounts/transaction/')
         form=TransactionForm()
         return render(request,"transaction.html",{'forms':form,'notify':note(request.user.id)})
     else:
@@ -141,7 +181,20 @@ def FundTransfer(request):
         if request.method=='POST':
             form=FundTransferForm(request.POST)
             if form.is_valid():
+                acc=TransactionModel.objects.get(user_id=request.user.id)
+                if acc.user.username==str(request.POST.get('Account')):
+                    messages.error(request,"You can't Transfer your fund to your own Account")
+                    return redirect('/accounts/transfer/')
+                if acc.bank>int(request.POST.get('Amount')):
+                    acc.bank-=int(request.POST.get('Amount'))
+                else:
+                    messages.error(request,"You don't have enough Bank Balance to Transfer!!")
+                    return redirect('/accounts/transfer/')
                 set_message(request.user.username,request.POST.get('Account'),request.POST.get('Amount'))
+                acc.statement.append(set_statement(acc,'Check Pass',request.POST.get('Amount')))
+                if len(acc.statement)>30:
+                    acc.statement.pop(0)
+                acc.save()
                 messages.success(request,"Fund Transfer Successfully from your Bank")
                 return redirect('/accounts/dashboard/')
             else:
@@ -169,3 +222,35 @@ def notification(request):
     else:
         return render(request,"page404.html")
 
+
+def cost(request):
+    if request.user.is_authenticated:
+        state=[]
+        acc=TransactionModel.objects.get(user_id=request.user.id).statement
+        for i in acc:
+            if i[1]=='Cash Expense' or i[1]=='Check Pass':
+                state.append(i)
+        state.reverse()
+        return render(request,"statements.html",{'cost':state,'count':len(state),'notify':note(request.user.id)})
+    else:
+        return render(request,"page404.html")
+
+def income(request):
+    if request.user.is_authenticated:
+        state=[]
+        acc=TransactionModel.objects.get(user_id=request.user.id).statement
+        for i in acc:
+            if i[1]!='Cash Expense' and i[1]!='Check Pass':
+                state.append(i)
+        state.reverse()
+        return render(request,"statements.html",{'income':state,'count':len(state),'notify':note(request.user.id)})
+    else:
+        return render(request,"page404.html")
+
+def alls(request):
+    if request.user.is_authenticated:
+        acc=TransactionModel.objects.get(user_id=request.user.id).statement
+        acc.reverse()
+        return render(request,"statements.html",{'state':acc,'count':len(acc),'notify':note(request.user.id)})
+    else:
+        return render(request,"page404.html")

@@ -1,5 +1,5 @@
 from django.forms import * 
-from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from accounts.models import TransactionModel, UserRegisterModel
 from django.contrib.auth.models import User
 from django.core import validators
@@ -16,6 +16,7 @@ class TransactionForm(Form):
     def clean_Amount(self):
         if self.cleaned_data['Amount']<0:
             raise ValidationError("Amount cannot be negative")
+    
 
 class FundTransferForm(Form):
     Account=CharField(help_text="Enter Account No of the Receiver",max_length=10,label="Account No")

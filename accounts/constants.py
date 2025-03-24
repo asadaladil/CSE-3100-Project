@@ -42,12 +42,11 @@ def make_city():
 
 acnt=2131000000
 Description=(
-    ('cd','Check Deposit'),
-    ('cp','Check Pass'),
-    ('dc','Cash Deposit'),
-    ('cw','Cash Withdraw'),
-    ('ci','Cash Income'),
-    ('ce','Cash Expense')
+    ('Check Deposit','Check Deposit'),
+    ('Cash Deposit','Cash Deposit'),
+    ('Cash Withdraw','Cash Withdraw'),
+    ('Cash Income','Cash Income'),
+    ('Cash Expense','Cash Expense')
     
 )
 def country():

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}
+{% if cost %}
+Cost Statements
+{% elif income %}
+Income Statements
+{% else %}
+All Statements
+{% endif %}
+{% endblock %} 
+{% load crispy_forms_tags %}
+{% block content %}
+{% if request.user.is_authenticated %}
+<p><h3>
+    {% if cost %}
+        All the {{count}} Cost Statements according to your Transactions:
+    {% elif income %}
+        All the {{count}} Income Statements according to your Transactions:
+    {% else %}
+        All the {{count}} Statements according to your Transactions:
+{% endif %}
+</h3></p>
+<br>
+<table style="margin:auto; width:70%; text-align:center;" class="table table-bordered border-primary">
+    <tr>
+        <th>Date-Time</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Balance After Transaction</th>
+    </tr>
+    {% if cost %}
+        {% for i in cost %}
+        </tr>
+            {% for j in i %}
+                <td>{{j}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    {% elif income %}
+        {% for i in income %}
+        </tr>
+            {% for j in i %}
+            <td>{{j}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    {% else %}
+        {% for i in state %}
+        </tr>
+            {% for j in i %}
+                <td>{{j}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    {% endif %}
+</table>
+{% endif %}
+{% endblock %}

@@ -2,16 +2,8 @@
 {% load static %} 
 {% load crispy_forms_tags %}
 {% block title %}Log In{% endblock %} 
-
 {% block content %}
 {% if not request.user.is_authenticated %}
-{% if messages %}
-{% for msg in messages %}
-<p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
-    {{ msg }}
-</p>
-{% endfor %}
-{% endif %}
 <table style="margin:auto; width:70%">
     <tr>
         <td>
@@ -21,6 +13,13 @@
             <form method="post" enctype="multipart/form-data" action='/accounts/login/'>
                 {% csrf_token %}
                 {{forms | crispy}} 
+                {% if messages %}
+                {% for msg in messages %}
+                <p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
+                    {{ msg }}
+                </p>
+                {% endfor %}
+                {% endif %}
                 <div style="text-align: center;">
                     <button type="submit" class="btn btn-success mt-3">Sign In</button>
                 </div>
