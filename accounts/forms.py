@@ -5,19 +5,20 @@ from django.contrib.auth.models import User
 from django.core import validators
 from .constants import *
 
+extention=['jpg','jpeg','png','JPG','JPEG','PNG']
 
 class TransactionForm(Form):
     type=ChoiceField(label="Type Of Transaction",
                    help_text="Choose your Transaction",
                    choices=Description
                    )
+    Specific=CharField(label="Specific type",help_text="Say About that Transaction",max_length=30)
     Amount=IntegerField(help_text="Enter your Amount")
     
     def clean_Amount(self):
-        if self.cleaned_data['Amount']<0:
-            raise ValidationError("Amount cannot be negative")
+        if self.cleaned_data['Amount']<=0:
+            raise ValidationError("Amount cannot be negative or equal to 0")
     
-
 class FundTransferForm(Form):
     Account=CharField(help_text="Enter Account No of the Receiver",max_length=10,label="Account No")
     Amount=IntegerField(help_text="Enter your Amount")
@@ -34,12 +35,9 @@ class FundTransferForm(Form):
             raise ValidationError("Account No does not exist")
         
     def clean_Amount(self):
-        if self.cleaned_data['Amount']<0:
-            raise ValidationError("Amount cannot be negative")
+        if self.cleaned_data['Amount']<=0:
+            raise ValidationError("Amount cannot be negative or equal to 0")
     
-
-        
-
 class UserRegisterForm(UserCreationForm):
     Check=CharField(widget=CheckboxInput,label="Show Password",required=False)
     phone=CharField(max_length=11,help_text="Enter your Phone Number",required=False)
@@ -73,7 +71,6 @@ class UserRegisterForm(UserCreationForm):
         if commit == True:
             id=UserRegisterModel.objects.last().user.username
             new_user.username=str(int(id)+1)
-            new_user.is_staff=True
             new_user.save() # user model e data save korlam
             Postal= self.cleaned_data.get('postal')
             country = self.cleaned_data.get('Country')
@@ -118,55 +115,55 @@ class UserLoginForm(Form):
     Password=CharField(widget=PasswordInput,help_text="Enter your Password")
     Check=CharField(widget=CheckboxInput,required=False,label="Show Password")
     
-# class UserUpdateForm(UserCreationForm):
-#     phone=CharField(max_length=11,help_text="Enter your Phone Number")
-#     File=FileField(help_text="Upload your Photo",required=False,validators=[validators.FileExtensionValidator(allowed_extensions=['jpg','jpeg','png'])])
-#     # Personal Address
-#     Country=ChoiceField(choices=country(),help_text="Select your Country")
-#     city=CharField(max_length=50,help_text="Enter your City")
-#     Address=CharField(max_length=200,help_text="Enter your Street Address")
-#     postal=IntegerField(help_text="Enter your Postal Code")
-#     class Meta:
-#         model = User
-#         fields = ['first_name', 'last_name', 'email']
+class UserUpdateForm(UserCreationForm):
+    phone=CharField(max_length=11,help_text="Enter your Phone Number")
+    File=FileField(help_text="Upload your Photo",required=False,validators=[validators.FileExtensionValidator(allowed_extensions=extention)])
+    # Personal Address
+    Country=ChoiceField(choices=country(),help_text="Select your Country")
+    city=CharField(max_length=50,help_text="Enter your City")
+    Address=CharField(max_length=200,help_text="Enter your Street Address")
+    postal=IntegerField(help_text="Enter your Postal Code")
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # for field in self.fields:
-#         #     self.fields[field].widget.attrs.update({
-#         #         'class': (
-#         #             'appearance-none block w-full bg-gray-200 '
-#         #             'text-gray-700 border border-gray-200 rounded '
-#         #             'py-3 px-4 leading-tight focus:outline-none '
-#         #             'focus:bg-white focus:border-gray-500'
-#         #         )
-#         #     })
-#         # jodi user er account thake 
-#         if self.instance:
-#             try:
-#                 user_account = self.instance
-#                 user_info=self.instance.d
-                
-#             except UserRegisterModel.DoesNotExist:
-#                 user_account = None
-
-#             if user_account:
-#                 self.fields['first_name'].initial = user_account.first_name
-#                 self.fields['last_name'].initial = user_account.last_name
-#                 self.fields['email'].initial = user_account.email
-#                 #self.fields['Country'].initial = user_account.Country
-
-#     def save(self, commit=True):
-#         user = super().save(commit=False)
-#         if commit:
-#             user.save()
-#             user_account, created = UserRegisterModel.objects.get_or_create(user=user) # jodi account thake taile seta jabe user_account ar jodi account na thake taile create hobe ar seta created er moddhe jabe
-            
-#             user_account.Address = self.cleaned_data['Address']
-#             user_account.city = self.cleaned_data['city']
-#             user_account.postal = self.cleaned_data['postal']
-#             user_account.Country = self.cleaned_data['Country']
-#             user_account.save()
-
-#         return user
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        user_account = self.instance
+        self.fields['first_name'].initial=user_account.user.first_name
+        self.fields['last_name'].initial=user_account.user.last_name
+        self.fields['email'].initial=user_account.user.email
+        self.fields['Country'].initial=user_account.Country
+        self.fields['city'].initial=user_account.city
+        self.fields['phone'].initial=user_account.phone
+        self.fields['Address'].initial=user_account.Address
+        self.fields['postal'].initial=user_account.postal
+        self.fields['File'].initial=user_account.photo
     
+
+added=(
+    ('Check Deposit','Check Deposit'),
+    ('Cash Deposit','Cash Deposit'),
+    ('Cash Withdraw','Cash Withdraw'),
+    ('Cash Income','Cash Income'),
+    ('Cash Expense','Cash Expense'),
+    ('Check Pass','Check Pass')   
+)
+class SpecificForm(Form):
+    type=ChoiceField(label="Type Of Transaction",
+                   help_text="Choose your Transaction",
+                   choices=added
+                   )
+    Type=ChoiceField(choices=Type,help_text="Choose your Type")
+    Specific=CharField(help_text='Enter the Category Name you want to Change')
+    Amount=DecimalField(max_digits=20,decimal_places=2,help_text="Enter the Updated Amount")
+
+class PasswordChangeForm(Form):
+    pass1=CharField(widget=PasswordInput, help_text="Enter your Old Password",label="Old Password:")
+    pass2=CharField(widget=PasswordInput,required=True,help_text="Enter your New Password",label="New Password:")
+    pass3=CharField(widget=PasswordInput,required=True,help_text="Confirm your New Password Again",label="Confirm New Password:")
+    Check=CharField(widget=CheckboxInput,required=False,label="Show Password")
+    
+class OTPForm(Form):
+    otp=DecimalField(max_digits=6,decimal_places=0,help_text="Enter your OTP",label="OTP")

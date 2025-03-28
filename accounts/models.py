@@ -7,8 +7,9 @@ class UserRegisterModel(models.Model):
     # personal information and Password
     user=models.OneToOneField(User,related_name='Accounts',on_delete=models.CASCADE)
     phone=models.CharField(max_length=11)
-    photo=models.ImageField(upload_to="profile_photos/")
+    photo=models.ImageField(upload_to="profile_photos/",default=' ')
     notify=models.JSONField(default=list)
+    active=models.BooleanField(default=False)
     # Personal Address
     Country=models.CharField(max_length=32,choices=country())
     city=models.CharField(max_length=50)
@@ -24,6 +25,8 @@ class TransactionModel(models.Model):
     statement=models.JSONField(default=list)
     cash=models.DecimalField(max_digits=20,decimal_places=2,default=0)
     bank=models.DecimalField(max_digits=20,decimal_places=2,default=0)
+    cost=models.JSONField(default=list)
+    income=models.JSONField(default=list)
     
     def __str__(self):
         name=self.user.first_name+' '+self.user.last_name

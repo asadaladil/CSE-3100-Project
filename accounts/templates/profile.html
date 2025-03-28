@@ -17,24 +17,24 @@
                 {% csrf_token %}
                 <p><h4 style="font-family:Arial;text-align:center;">Personal Information</h4></p> 
                   <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    <div style="flex: 1 1 45%;">{{ forms1.first_name | as_crispy_field }}</div>  
+                    <div style="flex: 1 1 45%;">{{ forms.first_name | as_crispy_field }}</div>  
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms1.last_name | as_crispy_field }}</div>
+                    <div style="flex: 1 1 45%;">{{ forms.last_name | as_crispy_field }}</div>
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms2.phone | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.phone | as_crispy_field }}</div> 
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms1.email | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.email | as_crispy_field }}</div> 
                   </div> 
-                 <div style="flex: 1 1 45%;">{{ forms2.File | as_crispy_field }}</div> 
+                 <div style="flex: 1 1 45%;">{{ forms.File | as_crispy_field }}</div> 
                  <h4 style="font-family:Arial;text-align:center;">Personal Address</h4>
                  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    <div style="flex: 1 1 45%;">{{ forms2.Country | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.Country | as_crispy_field }}</div> 
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms2.city | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.city | as_crispy_field }}</div> 
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms2.Address | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.Address | as_crispy_field }}</div> 
                     <br>
-                    <div style="flex: 1 1 45%;">{{ forms2.postal | as_crispy_field }}</div> 
+                    <div style="flex: 1 1 45%;">{{ forms.postal | as_crispy_field }}</div> 
                     <br>
                  </div>
                 <div style="text-align: center;">

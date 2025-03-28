@@ -12,8 +12,9 @@
                 {% csrf_token %}
                  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
                     <div style="flex: 1 1 45%;">{{ forms.type | as_crispy_field }}</div>  
-                    <br>
-                    <div style="flex: 1 1 45%;">{{ forms.Amount | as_crispy_field }}</div>  
+                    <div style="flex: 1 1 45%;">{{ forms.Specific | as_crispy_field }}</div>  
+                    <div style="flex: 1 1 45%;">{{ forms.Amount | as_crispy_field }}</div>
+                    <div style="flex: 1 1 45%;">{{ request.bank }}</div>  
                     {% if messages %}
                     {% for msg in messages %}
                     <p style="background-color: #a4361f; color: blach; padding: 10px; border-radius: 5px;">

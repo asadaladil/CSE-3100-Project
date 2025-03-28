@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
@@ -16,4 +18,6 @@ urlpatterns = [
     path('cstatements/',views.cost),
     path('istatements/',views.income),
     path('statements/',views.alls),
-]
+    path('specific/',views.update_specific),
+
+]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #profile photo r jonno

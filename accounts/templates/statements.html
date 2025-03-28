@@ -19,13 +19,18 @@ All Statements
         All the {{count}} Income Statements according to your Transactions:
     {% else %}
         All the {{count}} Statements according to your Transactions:
-{% endif %}
+        <form method="post" action="/accounts/statements/"> 
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger ms-3 mt-3" >Delete All History</button>
+        </form>
+    {% endif %}
 </h3></p>
 <br>
 <table style="margin:auto; width:70%; text-align:center;" class="table table-bordered border-primary">
     <tr>
         <th>Date-Time</th>
         <th>Description</th>
+        <th>Specific Task</th>
         <th>Amount</th>
         <th>Balance After Transaction</th>
     </tr>

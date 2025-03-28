@@ -11,6 +11,79 @@
     </p>
     {% endfor %}
     {% endif %}
-    
+<table style="margin:auto; width:90%; text-align:center;" class="table table-bordered border-warning mt-5">
+    <tr>
+        <td>
+        <h3>
+        <p class="text-info" style="font-family: 'Arial'">Welcome, {{name}} </p>
+        <p style="font-family: 'Arial'">Your A/C No - {{ac}} </p>
+        <p class="text-success" style="font-family: 'Arial'">Current Balance - {{save}} TK </p> 
+    </h3>
+    </td>
+    </tr>
+</table>
+
+<table style="margin:auto; width:90%; text-align:center;" class="table table-bordered border-warning mt-2">
+    <tr>
+        <td>
+            <h5>
+            <p style="font-family: 'Arial'">Total Income: {{income}} TK</p>
+            <p style="font-family: 'Arial'">Total cost: {{cost}} TK</p>
+            <p style="font-family: 'Arial'">Cost(%): {{cp}}% </p>
+            <p style="font-family: 'Arial'">Savings(%): {{sp}}% </p>
+        </h5>
+        </td>
+        <td>
+            <h5>
+            <p style="font-family: 'Arial'">Cash in Hand: {{hand}} TK </p>
+            <p style="font-family: 'Arial'">Cash in Bank: {{bank}} TK</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div id="columnchart_material" style="width: 420px; height: 250px;"></div>
+        </td>
+        <td>
+            <div id="columnchart_material" style="width: 400px; height: 250px;"></div>
+        </td>
+    </tr>
+        
+</table>
+{% comment %} <form method="post" action="/accounts/dashboard/">
+    {% csrf_token %}
+    <div style="text-align: center;" >
+        <button type="submit" class="btn btn-danger mt-5" style="font-family: 'Arial'">Reset to 0</button>
+    </div>
+</form> {% endcomment %}
+
+<a type="submit" class="btn btn-primary mt-5" style="font-family:Arial;" href="/accounts/specific/">
+    Update Specific Item</a>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['bar']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Year', '{{nm}}', 'Expenses', 'Profit'],
+        ['2014', 1000, 400, 200],
+        ['2015', 1170, 460, 250],
+        ['2016', 660, 1120, 300],
+        ['2017', 1030, 540, 350]
+    ]);
+
+    var options = {
+        chart: {
+        title: 'Company Performance',
+        subtitle: 'Sales, Expenses, and Profit: 2014-2017',
+        }
+    };
+
+    var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+    }
+</script>
 {% endif %}
 {% endblock %}

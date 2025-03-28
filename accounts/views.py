@@ -1,14 +1,20 @@
+from pickle import TRUE
 from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import render,redirect
 from django.contrib import messages
+from django.conf import settings
 from .forms import *
 from .models import *
 from .constants import *
 import time
+import os
 
 
 def note(id):
-    return (UserRegisterModel.objects.get(user_id=id).notify[0][0])
+    acc=UserRegisterModel.objects.get(user_id=id)
+    notify=acc.notify[0][0]
+    pic=acc.photo
+    return [notify,pic]
 def set_message(user_nm,ac_no2,amt):
     acc=UserRegisterModel.objects.all()
     acc2=TransactionModel.objects.all()
@@ -26,19 +32,44 @@ def set_message(user_nm,ac_no2,amt):
     for i in acc2:
         if i.user.username==ac_no2:
             i.bank+=int(amt)
-            i.statement.append(set_statement(i,'Check Received',amt))
+            Savings(i,['income','Get Fund',int(amt)])
+            i.statement.append(set_statement(i,'Check Received','Income',amt))
             if len(i.statement)>30:
                 i.statement.pop(0)
             i.save()
             break
     return
-
-def set_statement(acc,type,amnt):
+def set_statement(acc,type,specific,amnt):
     a=str(time.ctime())
     b=type
     c=amnt
-    d=f"Bank Balance-->TK {acc.bank}\nCash Balance-->TK {acc.cash}"
-    return [a,b,c,d]
+    d=f"Bank Balance-->TK {acc.bank}__Cash Balance-->TK {acc.cash}"
+    return [a,b,specific,c,d]
+def Savings(acc,List):
+    a=0
+    if List[0]=='cost':
+        for i in range(0,len(acc.cost)):
+            if acc.cost[i][0]==List[1]:
+                acc.cost[i][1]+=List[2]
+                a=1
+                break
+        if a==0:
+            acc.cost.append([List[1],List[2]])
+        acc.cost.sort()
+        acc.save()
+        return
+    a=0    
+    if List[0]=='income':
+        for i in range(0,len(acc.income)):
+            if acc.income[i][0]==List[1]:
+                acc.income[i][1]+=List[2]
+                a=1
+                break
+        if a==0:
+            acc.income.append([List[1],List[2]])
+        acc.income.sort()
+        acc.save()
+        return
 
 # Create your views here.
 def register(request):
@@ -49,6 +80,8 @@ def register(request):
         if form.is_valid():
             form.save()
             id=UserRegisterModel.objects.last().user.username
+            form=OTPForm()
+            return render(request,"otp.html",context={'forms':form,'otp':make_otp()})
             messages.success(request,f"Account is Created Successfully----Your Account No: {id}")
             return redirect('/accounts/login/')
         else:
@@ -67,10 +100,14 @@ def Login(request):
             user_ac=request.POST.get('Account_No')
             Pass=request.POST.get('Password')
             user=authenticate(request,username=user_ac,password=Pass)
+            acc=UserRegisterModel.objects.get(user_id=request.user.id)
+            if acc.active==False and user is not None:
+                otp(request)
             if user is not None:
                 login(request,user)
                 messages.success(request,"Account LOG IN Successfully!!")
                 return redirect('/accounts/dashboard/')
+                
             else:
                 messages.error(request,'Invalid Account No or Password!!')
                 return redirect('/accounts/login/')
@@ -79,7 +116,7 @@ def Login(request):
 
 def logout_page(request):
     if request.user.is_authenticated:
-        return render(request,"logout.html",{'notify':note(request.user.id)})
+        return render(request,"logout.html",{'notify':note(request.user.id)[0],'pic':note(request.user.id)[1]})
     return render(request,"page404.html")
 
 def Logout(request):
@@ -93,23 +130,40 @@ def Logout(request):
 
 def dashboard(request):
     if request.user.is_authenticated: 
+        if request.method=='POST':
+            acc=TransactionModel.objects.get(user_id=request.user.id)
+            acc.cost=[]
+            acc.income=[]
+            acc.bank=0
+            acc.cash=0
+            acc.save()
+            messages.success(request,"RESET is DONE Successfully!!")
+            return redirect('/accounts/dashboard/')
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        hand=acc.cash
+        bank=acc.bank
+        Income=0
+        Cost=0
+        for i in acc.cost:
+            Cost+=i[1]
+        for i in acc.income:
+            Income+=i[1]
+        Save=hand+bank
+        cp,sp=0,0
+        if Income!=0:
+            cp=round((Cost/Income)*100,2)
+            sp=100-cp
         name=request.user.first_name+' '+request.user.last_name
-        return render(request,"Dashboard.html",{'name':name,'notify':note(request.user.id)})
+        return render(request,"Dashboard.html",{'name':name,'notify':note(request.user.id)[0],'ac':request.user.username,
+                                                'bank':bank,'hand':hand,'cost':Cost,'income':Income,'save':Save,
+                                                'cp':cp,'sp':sp,'nm':'cost','pic':note(request.user.id)[1]})
     elif request.method=='GET':
         return render(request,"page404.html")
 
 
 def profile(request):
     if request.user.is_authenticated:
-        if request.method=='GET':
-            ac=UserRegisterModel.objects.get(user_id=request.user.id)
-            form1=UserRegisterForm(instance=request.user)
-            form2=UserRegisterForm(instance=ac)
-            # request.user dile nam email jay ar ac dile bakigule zay
-            name=request.user.first_name+' '+request.user.last_name
-            return render(request,"profile.html",context={'forms1':form1,'forms2':form2,'id':request.user.username
-                                                          ,'name':name,'notify':note(request.user.id)})
-        elif request.method=='POST':
+        if request.method=='POST':
             ac=UserRegisterModel.objects.get(user_id=request.user.id)
             ac.user.first_name=request.POST.get('first_name')
             ac.user.last_name=request.POST.get('last_name')
@@ -118,16 +172,25 @@ def profile(request):
             ac.city=request.POST.get('city')
             ac.Country=request.POST.get('Country')
             ac.postal=request.POST.get('postal')
-            ac.photo=request.POST.get('photo')
+            ac.Address=request.POST.get('Address')
+            file_path=str(ac.photo)
+            if file_path and request.FILES.get('File'):
+                full_path=os.path.join(settings.MEDIA_ROOT, file_path)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+            if request.FILES.get('File'):
+                ac.photo=request.FILES.get('File')
             ac.user.save()
             ac.save()
-            form1=UserRegisterForm(instance=request.user)
-            form2=UserRegisterForm(instance=ac)
-            # request.user dile nam email jay ar ac dile bakigule zay
-            name=request.user.first_name+' '+request.user.last_name
             messages.success(request,'Account Updated Successfully')
             return redirect('/accounts/dashboard/')
-        return redirect('/accounts/login/') 
+            
+        ac=UserRegisterModel.objects.get(user_id=request.user.id)
+        form=UserUpdateForm(instance=ac)
+        name=request.user.first_name+' '+request.user.last_name
+        return render(request,"profile.html",context={'id':request.user.username,
+                                                    'name':name,'notify':note(request.user.id)[0],
+                                                    'forms':form,'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html") 
         
@@ -137,12 +200,15 @@ def transaction(request):
         if request.method == 'POST':
             form = TransactionForm(request.POST)
             if form.is_valid():
-                acc=TransactionModel.objects.get(user_id=request.user.id)
+                ID=request.user.id
+                acc=TransactionModel.objects.get(user_id=ID)
                 temp=form.cleaned_data['type']
                 money=int(request.POST.get('Amount'))
+                specific=request.POST.get('Specific')
                 if temp=='Check Deposit':
                     acc.bank+=money
-                if temp=='Cash Deposit' and acc.cash>money:
+                    Savings(acc,['income',specific,money])
+                if temp=='Cash Deposit':
                     if acc.cash<money:
                         messages.error(request,f"You don't have enough Cash to deposit TK-{money} !!")
                         return redirect('/accounts/transaction/')    
@@ -156,12 +222,14 @@ def transaction(request):
                     acc.cash+=money
                 if temp=='Cash Income':
                     acc.cash+=money
+                    Savings(acc,['income',specific,money])
                 if temp=='Cash Expense':
                     if acc.cash<money:
                         messages.error(request,f"You don't have enough Cash to Expense TK-{money} !!")
                         return redirect('/accounts/transaction/')
                     acc.cash-=money
-                acc.statement.append(set_statement(acc,temp,money))
+                    Savings(acc,['cost',specific,money])
+                acc.statement.append(set_statement(acc,temp,specific,money))
                 if len(acc.statement)>30:
                     acc.statement.pop(0)
                 acc.save()
@@ -171,7 +239,7 @@ def transaction(request):
                 messages.error(request,form.errors)
                 return redirect('/accounts/transaction/')
         form=TransactionForm()
-        return render(request,"transaction.html",{'forms':form,'notify':note(request.user.id)})
+        return render(request,"transaction.html",{'forms':form,'notify':note(request.user.id)[0],'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html") 
 
@@ -185,13 +253,14 @@ def FundTransfer(request):
                 if acc.user.username==str(request.POST.get('Account')):
                     messages.error(request,"You can't Transfer your fund to your own Account")
                     return redirect('/accounts/transfer/')
-                if acc.bank>int(request.POST.get('Amount')):
+                if acc.bank>=int(request.POST.get('Amount')):
                     acc.bank-=int(request.POST.get('Amount'))
+                    Savings(acc,['cost','Payment',int(request.POST.get('Amount'))])
                 else:
                     messages.error(request,"You don't have enough Bank Balance to Transfer!!")
                     return redirect('/accounts/transfer/')
                 set_message(request.user.username,request.POST.get('Account'),request.POST.get('Amount'))
-                acc.statement.append(set_statement(acc,'Check Pass',request.POST.get('Amount')))
+                acc.statement.append(set_statement(acc,'Check Pass','Payment',request.POST.get('Amount')))
                 if len(acc.statement)>30:
                     acc.statement.pop(0)
                 acc.save()
@@ -201,13 +270,16 @@ def FundTransfer(request):
                 messages.error(request,form.errors)
                 return redirect('/accounts/transfer/')
         form=FundTransferForm()
-        return render(request,"transfer.html",{'forms':form,'notify':note(request.user.id)})
+        return render(request,"transfer.html",{'forms':form,'notify':note(request.user.id)[0],'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html") 
 
 def notification(request):
     if request.user.is_authenticated:
         ac=UserRegisterModel.objects.get(user_id=request.user.id)
+        if request.method=='POST':
+            ac.notify=[[0]]
+            ac.save()
         no=ac.notify[0][0]
         new_note=[]
         old_note=[]
@@ -217,8 +289,9 @@ def notification(request):
             old_note.append(ac.notify[-i])
         ac.notify[0][0]=0
         ac.save()
-        return render(request,"notification.html",{'notify':note(request.user.id),'new_note':new_note,'note':no,
-                                                   'notes':old_note,'prv':len(ac.notify)-1})
+        return render(request,"notification.html",{'notify':note(request.user.id)[0],'new_note':new_note,'note':no,
+                                                   'notes':old_note,'prv':len(ac.notify)-1,
+                                                   'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html")
 
@@ -226,31 +299,132 @@ def notification(request):
 def cost(request):
     if request.user.is_authenticated:
         state=[]
-        acc=TransactionModel.objects.get(user_id=request.user.id).statement
-        for i in acc:
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        for i in acc.statement:
             if i[1]=='Cash Expense' or i[1]=='Check Pass':
                 state.append(i)
         state.reverse()
-        return render(request,"statements.html",{'cost':state,'count':len(state),'notify':note(request.user.id)})
+        return render(request,"statements.html",{'cost':state,'count':len(state),'notify':note(request.user.id)[0],
+                                                 'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html")
 
 def income(request):
     if request.user.is_authenticated:
         state=[]
-        acc=TransactionModel.objects.get(user_id=request.user.id).statement
-        for i in acc:
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        for i in acc.statement:
             if i[1]!='Cash Expense' and i[1]!='Check Pass':
                 state.append(i)
         state.reverse()
-        return render(request,"statements.html",{'income':state,'count':len(state),'notify':note(request.user.id)})
+        return render(request,"statements.html",{'income':state,'count':len(state),'notify':note(request.user.id)[0],
+                                                 'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html")
 
 def alls(request):
     if request.user.is_authenticated:
-        acc=TransactionModel.objects.get(user_id=request.user.id).statement
-        acc.reverse()
-        return render(request,"statements.html",{'state':acc,'count':len(acc),'notify':note(request.user.id)})
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        if request.method=='POST':
+            acc.statement=[]
+            acc.save()
+        acc.statement.reverse()
+        return render(request,"statements.html",{'state':acc.statement,'count':len(acc.statement),'notify':note(request.user.id)[0],
+                                                 'pic':note(request.user.id)[1]})
     else:
         return render(request,"page404.html")
+
+def update_specific(request):
+    if request.user.is_authenticated:
+        if request.method=='POST':
+            acc=TransactionModel.objects.get(user_id=request.user.id)
+            temp=request.POST.get('Type')
+            temp1=request.POST.get('type')
+            cat=request.POST.get('Specific')
+            amt=int(request.POST.get('Amount'))
+            if amt<0:
+                messages.error(request,"Amount Can't be Negative")
+                return redirect('/accounts/specific/')
+            if temp=='Cost':
+                if temp1=='Cash Expense' or temp1=='Check Pass':
+                    v=0
+                    for i in acc.cost:
+                        if i[0]==cat:
+                            v=1
+                            dif=(i[1]-amt)
+                            if temp1=='Cash Expense':
+                                if (acc.cash+dif)<0:
+                                    messages.error(request,f"Insufficient Cash Balance to deduct {abs(dif)} from{acc.cash}")
+                                    return redirect('/accounts/specific/')
+                                i[1]=amt
+                                acc.cash+=dif
+                                acc.save()
+                                messages.success(request,f"Value Updated Successfully!!")
+                                return redirect('/accounts/dashboard/')
+                            elif temp1=='Check Pass':
+                                if (acc.bank+dif)<0:
+                                    messages.error(request,f"Insufficient Bank Balance to deduct {abs(dif)} from{acc.bank}")
+                                    return redirect('/accounts/specific/')
+                                i[1]=amt
+                                acc.bank+=dif
+                                acc.save()
+                                messages.success(request,f"Value Updated Successfully!!")
+                                return redirect('/accounts/dashboard/')
+                    if v==0:
+                        messages.error(request,f"Category Not Found")
+                        return redirect('/accounts/specific/')            
+                else:
+                    messages.error(request,f"Invalid selection {temp1} and {temp}")
+                    return redirect('/accounts/specific/')
+            elif temp=='Income':
+                if temp1=='Check Deposit' or temp1=='Cash Income':
+                    v=0
+                    for i in acc.income:
+                        if i[0]==cat:
+                            v=1
+                            dif=(amt-i[1])
+                            if temp1=='Check Deposit':
+                                if (acc.bank+dif)<0:
+                                    messages.error(request,f"Insufficient Bank Balance to deduct {abs(dif)} from{acc.bank}")
+                                    return redirect('/accounts/specific/')
+                                i[1]=amt
+                                acc.bank+=dif
+                                acc.save()
+                                messages.success(request,f"Value Updated Successfully!!")
+                                return redirect('/accounts/dashboard/')
+                            elif temp1=='Cash Income':
+                                if (acc.cash+dif)<0:
+                                    messages.error(request,f"Insufficient Bank Balance to deduct {abs(dif)} from{acc.cash}")
+                                    return redirect('/accounts/specific/')
+                                i[1]=amt
+                                acc.cash+=dif
+                                acc.save()
+                                messages.success(request,f"Value Updated Successfully!!")
+                                return redirect('/accounts/dashboard/')
+                    if v==0:
+                        messages.error(request,f"Category Not Found")
+                        return redirect('/accounts/specific/')            
+                else:
+                    messages.error(request,f"Invalid selection {temp1} and {temp}")
+                    return redirect('/accounts/specific/')
+        form=SpecificForm()
+        return render(request,"specific.html",{'forms':form,'notify':note(request.user.id)[0],'pic':note(request.user.id)[1]})
+    else:
+        return render(request,"page404.html")
+
+pin="" 
+email=""                       
+def otp(request):
+    if request.user.is_authenticated:
+        if request.method=='POST':
+            if request.POST.get('otp')==pin:
+                acc=UserRegisterModel.objects.get(user_id=request.user.id)
+                acc.active=True
+                email=acc.user.email
+                acc.save()
+                messages.success(request,"Account is verified Successfully!!")
+                return redirect('/')
+        pin=make_otp()
+        form=OTPForm()
+        return render(request,"otp.html",{'forms':form,'pin':pin,'email':email})
+                

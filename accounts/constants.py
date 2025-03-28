@@ -1,3 +1,7 @@
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+import random
 Country1=['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 
          'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 
          'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 
@@ -39,6 +43,7 @@ def make_city():
         city[i]=()
     city["Bangladesh"]=Bd_city
     return city
+Type=(('Cost','Cost'),('Income','Income'))
 
 acnt=2131000000
 Description=(
@@ -56,5 +61,48 @@ def country():
         Country2.append((i,i))
     return tuple(Country2)
 
+def BarGraph(List,total,nm):
+    categories = []
+    values = []
+    for i in List:
+        categories.append(i[0])
+        values.append((i[1]/total)*100)
+    bars=plt.bar(categories, values, color='skyblue')
+    plt.title(f"{nm} Graph")
+    plt.xlabel('Categories')
+    plt.ylabel('Percentages(%)')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2, height, 
+            f'{round(height,2)}%', ha='center', va='bottom')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    plt.close()
+    return image_base64
 
+def PieGraph(income,cost):
+    labels = ['Savings','Cost']
+    s=round((income-cost)/income*100,2)
+    c=round(cost/income*100,2)
+    sizes = [s,c]
+    colors = ['lightgreen','lightcoral']
+    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+    plt.axis('equal')  
+    plt.title('Basic Pie Chart (Matplotlib)')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    plt.close()
+    return image_base64
 
+   
+# A=BarGraph([["Get Fund", 100], ["Script Evaluate", 6100]],6200,'Income')
+# PieGraph(6100,2000)
+
+def make_otp():
+    num=random.randint(100000,999999)
+    return str(num)

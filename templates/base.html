@@ -52,8 +52,8 @@
                   Settings
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Change Password</a></li>
-                  <li><a class="dropdown-item" href="#">Delete Account</a></li>
+                  <li><a class="dropdown-item" href="/password/">Change Password</a></li>
+                  <li><a class="dropdown-item" href="/delete/">Delete Account</a></li>
                 </ul>
               </li>
               <a type="button" class="btn btn-primary" href="/accounts/notifications/">
@@ -62,6 +62,9 @@
               <li class="nav-item">
                 <h4 class="nav-link ms-3 me-5">A/C- {{request.user.username}}</h4>
               </li>
+              <div > 
+                <img src="/media/{{ pic }}" alt="photo" style="width: 40px; height: 40px;"/>
+              </div>
               <a class="btn btn-outline-danger ms-5" type="submit" href="/accounts/Logout/">Sign Out</a>
           {% else %}
           <div   class="ms-5"></div>

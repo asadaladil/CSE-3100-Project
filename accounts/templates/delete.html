@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %}Log Out{% endblock %} 
+
+{% block content %}
+{% if request.user.is_authenticated %}
+<table style="margin:auto; width:40%">
+    <tr>
+        <td>
+            <p><h2 style="font-family:Arial;"> Are you sure, You want to DELETE your account?</h2></p>
+            <p><h2 style="font-family:Arial;"> All your Data will be Removed and it can't be undone...</h2></p>
+                <p style="margin:auto;width:60%">
+                <a type="submit" class="btn btn-success mt-3 me-5 ms-5" href="/accounts/dashboard/">Cancel</a>
+                <a type="submit" class="btn btn-danger mt-3 ms-5" href="/Delete/">Delete</a>
+                </p>
+        </td>
+    </tr>
+</table>
+
+{% endif %}
+{% endblock %}

@@ -26,7 +26,11 @@
 {% else %}
 <p><h6>No New Notification</h6></p>
 <p><h3>Previous {{prv}} Notifications:</h3></p>
-<table style="margin:auto; width:70%; text-align:center" class="table table-bordered border-success">
+<form method="post" action="/accounts/notifications/"> 
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger ms-3 md-3" >Delete All Notifications</button>
+</form>
+<table style="margin:auto; width:70%; text-align:center" class="table table-bordered border-success mt-3">
     <tr>
         <th>Date-Time</th>
         <th>Description</th>
