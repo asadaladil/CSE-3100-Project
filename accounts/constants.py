@@ -111,4 +111,3 @@ def PieGraph(income,cost):
 def make_otp():
     num=random.randint(100000,999999)
     return str(num)
-
