@@ -26,7 +26,9 @@ urlpatterns = [
     path('password/', views.Change_Password),
     path('delete/', views.Delete_Page),
     path('Delete/', views.Delete),
-    path('OTP/', views.otp),
+    path('forgot/', views.forgot_page),
+    path('pdf/', views.PDF),
+    path('Forgot/<str:id>/', views.Forgot),
     path('accounts/',include('accounts.urls')),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #profile photo r jonno

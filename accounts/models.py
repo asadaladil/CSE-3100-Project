@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.forms import IntegerField
 from .constants import *
 # Create your models here.
 
@@ -9,7 +10,7 @@ class UserRegisterModel(models.Model):
     phone=models.CharField(max_length=11)
     photo=models.ImageField(upload_to="profile_photos/",default=' ')
     notify=models.JSONField(default=list)
-    active=models.BooleanField(default=False)
+    OTP=models.CharField(max_length=6,default='0')
     # Personal Address
     Country=models.CharField(max_length=32,choices=country())
     city=models.CharField(max_length=50)

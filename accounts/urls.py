@@ -19,5 +19,6 @@ urlpatterns = [
     path('istatements/',views.income),
     path('statements/',views.alls),
     path('specific/',views.update_specific),
+    path('verify/',views.otp),
 
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #profile photo r jonno

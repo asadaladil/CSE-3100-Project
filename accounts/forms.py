@@ -166,4 +166,14 @@ class PasswordChangeForm(Form):
     Check=CharField(widget=CheckboxInput,required=False,label="Show Password")
     
 class OTPForm(Form):
-    otp=DecimalField(max_digits=6,decimal_places=0,help_text="Enter your OTP",label="OTP")
+    Account=CharField(max_length=10,label="Account No:",help_text="Enter your Account No")
+    otp=CharField(max_length=6,help_text="Enter your OTP",label="OTP")
+
+class FPform(Form):
+    Account=CharField(max_length=10,label="Account No:",help_text="Enter your Account No")
+    
+class FPPageForm(Form):
+    otp=CharField(max_length=6,help_text="Enter your OTP",label="OTP")
+    pass1=CharField(widget=PasswordInput,required=True,help_text="Enter your New Password",label="New Password:")
+    pass2=CharField(widget=PasswordInput,required=True,help_text="Confirm your New Password Again",label="Confirm New Password:")
+    Check=CharField(widget=CheckboxInput,required=False,label="Show Password")

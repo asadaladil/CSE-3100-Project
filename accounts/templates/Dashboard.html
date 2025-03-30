@@ -39,12 +39,17 @@
             <p style="font-family: 'Arial'">Cash in Bank: {{bank}} TK</p>
         </td>
     </tr>
+</table>
+<table style="margin:auto; width:90%; text-align:center;" class="mt-2">
     <tr>
         <td>
-            <div id="columnchart_material" style="width: 420px; height: 250px;"></div>
+            <img src="data:image/png;base64,{{ chart1 }}" alt="Bar Chart" style="width: 400px; height: 400px;">
         </td>
         <td>
-            <div id="columnchart_material" style="width: 400px; height: 250px;"></div>
+            <img src="data:image/png;base64,{{ chart2 }}" alt="Bar Chart" style="width: 400px; height: 400px;">
+        </td>
+        <td>
+            <img src="data:image/png;base64,{{ chart3 }}" alt="Pie Chart" style="width: 400px; height: 400px;">
         </td>
     </tr>
         
@@ -58,32 +63,8 @@
 
 <a type="submit" class="btn btn-primary mt-5" style="font-family:Arial;" href="/accounts/specific/">
     Update Specific Item</a>
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript">
-    google.charts.load('current', {'packages':['bar']});
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart() {
-    var data = google.visualization.arrayToDataTable([
-        ['Year', '{{nm}}', 'Expenses', 'Profit'],
-        ['2014', 1000, 400, 200],
-        ['2015', 1170, 460, 250],
-        ['2016', 660, 1120, 300],
-        ['2017', 1030, 540, 350]
-    ]);
-
-    var options = {
-        chart: {
-        title: 'Company Performance',
-        subtitle: 'Sales, Expenses, and Profit: 2014-2017',
-        }
-    };
-
-    var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
-
-    chart.draw(data, google.charts.Bar.convertOptions(options));
-    }
-</script>
+{{ chart1|json_script:"chart1" }}   
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="{% static 'Javascript/chart1.js' %}"></script>
 {% endif %}
 {% endblock %}

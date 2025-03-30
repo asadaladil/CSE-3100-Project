@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %} 
+{% load crispy_forms_tags %}
+{% block title %}Change Password{% endblock %} 
+{% block content %}
+{% if not request.user.is_authenticated %}
+<div style="margin:auto; width:50%; font-family:Arial">
+    <p>
+        <h3>A/C No- {{id}}</h3>
+    </p>
+    <p>
+        <h3>OTP: {{pin}} is sent to {{email}}</h3>
+    </p>
+</div>
+<table style="margin:auto; width:70%">
+    <tr>
+        <td>
+            <form method="post" enctype="multipart/form-data" action='/Forgot/{{id}}/'>
+                {% csrf_token %}
+                {{forms | crispy}} 
+                {% if messages %}
+                {% for msg in messages %}
+                <p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
+                    {{ msg }}
+                </p>
+                {% endfor %}
+                {% endif %}
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-success mt-3">Submit</button>
+                </div>
+        </form>
+    <td>
+        <img src="{% static 'images/logo.png' %}"/>
+    </td>
+    </tr>
+</table>
+
+
+<script src="{% static 'Javascript/changepass.js' %}"> </script>
+<script src="{% static 'Javascript/hidden.js' %}"> </script>
+{% endif %}
+{% endblock %}

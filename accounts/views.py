@@ -1,4 +1,3 @@
-from pickle import TRUE
 from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import render,redirect
 from django.contrib import messages
@@ -7,8 +6,8 @@ from .forms import *
 from .models import *
 from .constants import *
 import time
+from django.utils import timezone
 import os
-
 
 def note(id):
     acc=UserRegisterModel.objects.get(user_id=id)
@@ -79,10 +78,15 @@ def register(request):
         form=UserRegisterForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
-            id=UserRegisterModel.objects.last().user.username
-            form=OTPForm()
-            return render(request,"otp.html",context={'forms':form,'otp':make_otp()})
-            messages.success(request,f"Account is Created Successfully----Your Account No: {id}")
+            acc=UserRegisterModel.objects.last()
+            id=acc.user.username
+            pin=make_otp()
+            acc.OTP=int(pin)
+            acc.save()
+            messages.success(request,f"Account is Created Successfully!!")
+            messages.info(request,f"Your Account No- {id}")
+            messages.info(request,f"Go to Verify Page for Verification!!")
+            messages.info(request,f"OTP {pin} is sent to {acc.user.email}")
             return redirect('/accounts/login/')
         else:
             #print(form.errors)
@@ -100,22 +104,40 @@ def Login(request):
             user_ac=request.POST.get('Account_No')
             Pass=request.POST.get('Password')
             user=authenticate(request,username=user_ac,password=Pass)
-            acc=UserRegisterModel.objects.get(user_id=request.user.id)
-            if acc.active==False and user is not None:
-                otp(request)
+            acc=UserRegisterModel.objects.all()
+            v=0
+            for i in acc:
+                if i.user.username==user_ac:
+                    v=1
+                    acc=i
+                    break
+            if v==0:
+                messages.error(request,'Account No Does not Exist!!')
+                return redirect('/accounts/login/')
+            if acc.OTP!='0' and user is not None:
+                messages.info(request,"Go to Verify page for Verification")
+                acc.OTP=make_otp()
+                acc.save()
+                messages.info(request,f"OTP {acc.OTP} is sent to {acc.user.email}")
+                return redirect('/accounts/login/')
             if user is not None:
                 login(request,user)
                 messages.success(request,"Account LOG IN Successfully!!")
-                return redirect('/accounts/dashboard/')
-                
+                return redirect('/accounts/dashboard/')   
             else:
-                messages.error(request,'Invalid Account No or Password!!')
+                messages.error(request,'Your Password is WRONG !!')
                 return redirect('/accounts/login/')
     form=UserLoginForm()
     return render(request,"login.html",context={'forms':form})
 
 def logout_page(request):
     if request.user.is_authenticated:
+        acc=UserRegisterModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         return render(request,"logout.html",{'notify':note(request.user.id)[0],'pic':note(request.user.id)[1]})
     return render(request,"page404.html")
 
@@ -130,8 +152,13 @@ def Logout(request):
 
 def dashboard(request):
     if request.user.is_authenticated: 
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
-            acc=TransactionModel.objects.get(user_id=request.user.id)
             acc.cost=[]
             acc.income=[]
             acc.bank=0
@@ -139,7 +166,6 @@ def dashboard(request):
             acc.save()
             messages.success(request,"RESET is DONE Successfully!!")
             return redirect('/accounts/dashboard/')
-        acc=TransactionModel.objects.get(user_id=request.user.id)
         hand=acc.cash
         bank=acc.bank
         Income=0
@@ -153,18 +179,28 @@ def dashboard(request):
         if Income!=0:
             cp=round((Cost/Income)*100,2)
             sp=100-cp
-        name=request.user.first_name+' '+request.user.last_name
-        return render(request,"Dashboard.html",{'name':name,'notify':note(request.user.id)[0],'ac':request.user.username,
+        chart1=BarGraph(acc.income,Income,'Income')
+        chart2=BarGraph(acc.cost,Cost,'Cost')
+        chart3=PieGraph(Income,Cost)
+        name=acc.user.first_name+' '+acc.user.last_name
+        return render(request,"Dashboard.html",{'name':name,'notify':note(request.user.id)[0],'ac':acc.user.username,
                                                 'bank':bank,'hand':hand,'cost':Cost,'income':Income,'save':Save,
-                                                'cp':cp,'sp':sp,'nm':'cost','pic':note(request.user.id)[1]})
-    elif request.method=='GET':
+                                                'cp':cp,'sp':sp,'nm':'cost','pic':note(request.user.id)[1],
+                                                'chart1':chart1,'chart2':chart2,'chart3':chart3})
+    else:
         return render(request,"page404.html")
 
 
 def profile(request):
     if request.user.is_authenticated:
+        ac=UserRegisterModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-ac.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
-            ac=UserRegisterModel.objects.get(user_id=request.user.id)
+            # ac=UserRegisterModel.objects.get(user_id=request.user.id)
             ac.user.first_name=request.POST.get('first_name')
             ac.user.last_name=request.POST.get('last_name')
             ac.user.email=request.POST.get('email')
@@ -182,13 +218,13 @@ def profile(request):
                 ac.photo=request.FILES.get('File')
             ac.user.save()
             ac.save()
-            messages.success(request,'Account Updated Successfully')
+            messages.success(request,'Profile Updated Successfully')
             return redirect('/accounts/dashboard/')
             
-        ac=UserRegisterModel.objects.get(user_id=request.user.id)
+        # ac=UserRegisterModel.objects.get(user_id=request.user.id)
         form=UserUpdateForm(instance=ac)
-        name=request.user.first_name+' '+request.user.last_name
-        return render(request,"profile.html",context={'id':request.user.username,
+        name=ac.user.first_name+' '+ac.user.last_name
+        return render(request,"profile.html",context={'id':ac.user.username,
                                                     'name':name,'notify':note(request.user.id)[0],
                                                     'forms':form,'pic':note(request.user.id)[1]})
     else:
@@ -197,11 +233,15 @@ def profile(request):
 
 def transaction(request):
     if request.user.is_authenticated:
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method == 'POST':
             form = TransactionForm(request.POST)
             if form.is_valid():
-                ID=request.user.id
-                acc=TransactionModel.objects.get(user_id=ID)
                 temp=form.cleaned_data['type']
                 money=int(request.POST.get('Amount'))
                 specific=request.POST.get('Specific')
@@ -246,10 +286,15 @@ def transaction(request):
 
 def FundTransfer(request):
     if request.user.is_authenticated:
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
             form=FundTransferForm(request.POST)
             if form.is_valid():
-                acc=TransactionModel.objects.get(user_id=request.user.id)
                 if acc.user.username==str(request.POST.get('Account')):
                     messages.error(request,"You can't Transfer your fund to your own Account")
                     return redirect('/accounts/transfer/')
@@ -259,7 +304,7 @@ def FundTransfer(request):
                 else:
                     messages.error(request,"You don't have enough Bank Balance to Transfer!!")
                     return redirect('/accounts/transfer/')
-                set_message(request.user.username,request.POST.get('Account'),request.POST.get('Amount'))
+                set_message(acc.user.username,request.POST.get('Account'),request.POST.get('Amount'))
                 acc.statement.append(set_statement(acc,'Check Pass','Payment',request.POST.get('Amount')))
                 if len(acc.statement)>30:
                     acc.statement.pop(0)
@@ -277,6 +322,11 @@ def FundTransfer(request):
 def notification(request):
     if request.user.is_authenticated:
         ac=UserRegisterModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-ac.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
             ac.notify=[[0]]
             ac.save()
@@ -300,6 +350,11 @@ def cost(request):
     if request.user.is_authenticated:
         state=[]
         acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         for i in acc.statement:
             if i[1]=='Cash Expense' or i[1]=='Check Pass':
                 state.append(i)
@@ -313,6 +368,11 @@ def income(request):
     if request.user.is_authenticated:
         state=[]
         acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         for i in acc.statement:
             if i[1]!='Cash Expense' and i[1]!='Check Pass':
                 state.append(i)
@@ -325,6 +385,11 @@ def income(request):
 def alls(request):
     if request.user.is_authenticated:
         acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
             acc.statement=[]
             acc.save()
@@ -336,8 +401,14 @@ def alls(request):
 
 def update_specific(request):
     if request.user.is_authenticated:
+        acc=TransactionModel.objects.get(user_id=request.user.id)
+        tm=timezone.now()-acc.user.last_login
+        if tm.total_seconds()>600:
+            messages.info(request,"Account is Logged out Due to accessing the A/C more than 10 minutes")
+            logout(request)
+            return redirect('/accounts/login/')
         if request.method=='POST':
-            acc=TransactionModel.objects.get(user_id=request.user.id)
+            
             temp=request.POST.get('Type')
             temp1=request.POST.get('type')
             cat=request.POST.get('Specific')
@@ -412,19 +483,33 @@ def update_specific(request):
     else:
         return render(request,"page404.html")
 
-pin="" 
-email=""                       
+                       
 def otp(request):
     if request.user.is_authenticated:
-        if request.method=='POST':
-            if request.POST.get('otp')==pin:
-                acc=UserRegisterModel.objects.get(user_id=request.user.id)
-                acc.active=True
-                email=acc.user.email
-                acc.save()
-                messages.success(request,"Account is verified Successfully!!")
-                return redirect('/')
-        pin=make_otp()
-        form=OTPForm()
-        return render(request,"otp.html",{'forms':form,'pin':pin,'email':email})
+        return render(request,"page404.html")
+    if request.method=='POST':
+        user=request.POST.get('Account')
+        acc=UserRegisterModel.objects.all()
+        v=0
+        for i in acc:
+            if i.user.username==user:
+                v=1
+                acc=i
+                break
+        if v==0:
+            messages.error(request,f"User Not Found")
+            return redirect('/accounts/verify/')
+        if acc.OTP=='0':
+            messages.success(request,"Account is already verified !!")
+            return redirect('/accounts/login/')
+        if request.POST.get('otp')==acc.OTP:
+            acc.OTP='0'
+            acc.save()
+            messages.success(request,"Account is verified Successfully!!")
+            return redirect('/accounts/login/')
+        else:
+            messages.error(request,f"Invalid OTP")
+            return redirect('/accounts/verify/')
+    form=OTPForm()
+    return render(request,"otp.html",{'forms':form})
                 

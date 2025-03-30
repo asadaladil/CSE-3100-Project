@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
@@ -67,7 +69,9 @@ def BarGraph(List,total,nm):
     for i in List:
         categories.append(i[0])
         values.append((i[1]/total)*100)
-    bars=plt.bar(categories, values, color='skyblue')
+    if nm=="Income": cl="green"
+    else: cl="coral"
+    bars=plt.bar(categories, values, color=cl)
     plt.title(f"{nm} Graph")
     plt.xlabel('Categories')
     plt.ylabel('Percentages(%)')
@@ -77,32 +81,34 @@ def BarGraph(List,total,nm):
         plt.text(bar.get_x() + bar.get_width() / 2, height, 
             f'{round(height,2)}%', ha='center', va='bottom')
     buffer = BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.savefig(buffer, format='png')
     buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    image_png = buffer.getvalue()
+    buffer.close()
+    chart = base64.b64encode(image_png).decode('utf-8')
     plt.close()
-    return image_base64
+    return chart
 
 def PieGraph(income,cost):
     labels = ['Savings','Cost']
+    if income==0:income=1
     s=round((income-cost)/income*100,2)
     c=round(cost/income*100,2)
     sizes = [s,c]
-    colors = ['lightgreen','lightcoral']
+    colors = ['green','coral']
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
     plt.axis('equal')  
-    plt.title('Basic Pie Chart (Matplotlib)')
+    plt.title('Savings-Cost Piechart')
     buffer = BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.savefig(buffer, format='png')
     buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    image_png = buffer.getvalue()
+    buffer.close()
+    chart = base64.b64encode(image_png).decode('utf-8')
     plt.close()
-    return image_base64
-
-   
-# A=BarGraph([["Get Fund", 100], ["Script Evaluate", 6100]],6200,'Income')
-# PieGraph(6100,2000)
+    return chart
 
 def make_otp():
     num=random.randint(100000,999999)
     return str(num)
+

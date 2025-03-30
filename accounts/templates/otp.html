@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% load static %} 
-{% block title %}Transaction{% endblock %} 
+{% block title %}Verification{% endblock %} 
 {% load crispy_forms_tags %}
 {% block content %}
-{% if request.user.is_authenticated %}
+{% if not request.user.is_authenticated %}
 
 <table style="margin:auto; width:70%">
     <tr>
         <td>
-            <h2 style="font-family:Arial">OTP: {{pin}} is sent to the email {{email}}</h2>
-            <form method="post" enctype="multipart/form-data" action='/accounts/otp/'>
+            <h2 style="font-family:Arial">Confirm your OTP with Account No here: </h2>
+            <form method="post" enctype="multipart/form-data" action='/accounts/verify/'>
                 {% csrf_token %}
                  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1 1 45%;">{{ forms.Account | as_crispy_field }}</div>
                     <div style="flex: 1 1 45%;">{{ forms.otp | as_crispy_field }}</div>    
                     {% if messages %}
                     {% for msg in messages %}
