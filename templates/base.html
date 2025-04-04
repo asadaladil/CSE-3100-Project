@@ -67,9 +67,11 @@
               <li class="nav-item">
                 <h4 class="nav-link ms-3 me-5">A/C- {{request.user.username}}</h4>
               </li>
-              <div > 
+              <div >
+                <a href="/media/{{pic}}/" >
                 <img src="/media/{{ pic }}" alt="photo" style="width: 45px; height: 45px;" 
-                class="rounded-circle object-fit-cover border border-3 border-white shadow"  />
+                class="rounded-circle object-fit-cover border border-3 border-white shadow"  
+                /></a>
               </div>
               <a class="btn btn-outline-danger ms-5" type="submit" href="/accounts/Logout/">Sign Out</a>
           {% else %}
