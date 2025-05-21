@@ -3,7 +3,9 @@ from django.contrib.auth.forms import UserCreationForm
 from accounts.models import TransactionModel, UserRegisterModel
 from django.contrib.auth.models import User
 from django.core import validators
+from django.core.validators import RegexValidator
 from .constants import *
+import os
 
 extention=['jpg','jpeg','png','JPG','JPEG','PNG']
 
@@ -40,7 +42,14 @@ class FundTransferForm(Form):
     
 class UserRegisterForm(UserCreationForm):
     Check=CharField(widget=CheckboxInput,label="Show Password",required=False)
-    phone=CharField(max_length=11,help_text="Enter your Phone Number",required=False)
+    phone=CharField(max_length=11,help_text="Enter your Phone Number",required=False,
+                    validators=[
+        RegexValidator(
+            regex=r'^[0-9]*$',  # Only digits allowed
+            message="Phone number must contain only numbers."
+        )
+    ]
+)
     File=FileField(help_text="Upload your Photo",required=False,validators=[validators.FileExtensionValidator(allowed_extensions=['jpg','jpeg','png'])])
     # Personal Address
     Country=ChoiceField(choices=country(),help_text="Select your Country")
