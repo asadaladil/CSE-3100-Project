@@ -45,11 +45,11 @@ def Change_Password(request):
             pass1=request.POST.get('pass1')
             pass2=request.POST.get('pass2')
             pass3=request.POST.get('pass3')
-            if pass1==pass2 and pass2==pass3:
-                messages.error(request,"Old and New Password must be different!!")
-                return redirect('/password/')
             if acc.user.check_password(pass1)==False:
                 messages.error(request,"Old Password is incorrect!!")
+                return redirect('/password/')
+            if pass1==pass2 and pass2==pass3:
+                messages.error(request,"Old and New Password must be different!!")
                 return redirect('/password/')
             if pass2!=pass3:
                 messages.error(request,"New Password and Confirm Password must be same!!")
