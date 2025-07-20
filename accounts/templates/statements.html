@@ -61,5 +61,14 @@ All Statements
     {% endif %}
 </table>
 {% endif %}
-<a type="submit" href="/pdf/" target="Statements">View PDF</a>
+<p style="margin:auto; width:70%; text-align:center;">
+<a type="submit" class="btn btn-primary ms-3 mt-3" href="/pdf/" target="Statements">View PDF</a>
+<p>
+<script>
+function text_color() {
+    // Hide the button but keep its space
+    document.getElementById("statement").style.color="blue";
+  }
+text_color();
+</script>
 {% endblock %}

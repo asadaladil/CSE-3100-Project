@@ -114,13 +114,16 @@ def Login(request):
             if v==0:
                 messages.error(request,'Account No Does not Exist!!')
                 return redirect('/accounts/login/')
-            if acc.OTP!='0' and user is not None:
+            if acc.user.is_active is False:
+                messages.error(request,'Your Account is inactive !!')
+                return redirect('/accounts/login/')
+            elif acc.OTP!='0' and user is not None:
                 messages.info(request,"Go to Verify page for Verification")
                 acc.OTP=make_otp()
                 acc.save()
                 messages.info(request,f"OTP {acc.OTP} is sent to {acc.user.email}")
                 return redirect('/accounts/login/')
-            if user is not None:
+            elif user is not None:
                 login(request,user)
                 messages.success(request,"Account LOG IN Successfully!!")
                 return redirect('/accounts/dashboard/')   
