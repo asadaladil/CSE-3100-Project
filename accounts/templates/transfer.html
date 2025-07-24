@@ -13,13 +13,15 @@
                     <div style="flex: 1 1 45%;">{{ forms.Account | as_crispy_field }}</div>  
                     <br>
                     <div style="flex: 1 1 45%;">{{ forms.Amount | as_crispy_field }}</div>     
-                    {% if messages %}
-                    {% for msg in messages %}
-                    <p style="background-color: #a4361f; color: blach; padding: 10px; border-radius: 5px;">
-                        {{ msg }}
-                    </p>
-                    {% endfor %}
-                    {% endif %}
+                     {% if messages %}
+                {% for msg in messages %}
+                    <div id="django-message" class="alert alert-{{ message.tags }}">
+                    <p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
+                    {{ msg }}
+                </p>
+                    </div>
+                {% endfor %}
+            {% endif %}
     
             </div> 
                 <div style="text-align: center;">

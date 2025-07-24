@@ -4,13 +4,16 @@
 
 {% block content %}
 {% if request.user.is_authenticated %}
+
 {% if messages %}
     {% for msg in messages %}
-    <p style="background-color: green; color: black; padding: 10px; border-radius: 5px;">
+        <div id="django-message" class="alert alert-{{ message.tags }}">
+            <p style="background-color: green; color: black; padding: 10px; border-radius: 5px;">
         {{ msg }}
     </p>
+        </div>
     {% endfor %}
-    {% endif %}
+{% endif %}
 <table style="margin:auto; width:90%; text-align:center;" class="table table-bordered border-warning mt-5">
     <tr>
         <td>

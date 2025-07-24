@@ -68,10 +68,16 @@
                 <h4 class="nav-link ms-3 me-5">A/C- {{request.user.username}}</h4>
               </li>
               <div >
-                <a href="/media/{{pic}}/" >
+                {% if pic != ' ' %}
+                <a href="/media/{{pic}}/" target="_blank">
                 <img src="/media/{{ pic }}" alt="photo" style="width: 45px; height: 45px;" 
                 class="rounded-circle object-fit-cover border border-3 border-white shadow"  
                 /></a>
+                {% else %}
+                <img alt="photo" style="width: 45px; height: 45px;" 
+                class="rounded-circle object-fit-cover border border-3 border-white shadow"  
+                />
+                {% endif %}
               </div>
               <a class="btn btn-outline-danger ms-5" type="submit" href="/accounts/Logout/">Sign Out</a>
           {% else %}
@@ -93,6 +99,17 @@
     {% block content %}{% endblock %}
     {% comment %} bootstrap er javascript file {% endcomment %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- JavaScript to auto-remove -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const message = document.getElementById('django-message');
+        if (message) {
+            setTimeout(() => {
+                message.remove(); // Remove the message after delay
+            }, 5000); // 5000ms = 5 seconds
+        }
+    });
+</script>
     {% if request.user.is_authenticated %}
     <footer class="footer bg-success text-white mt-5 border-bottom border-2">
       <div class="container">

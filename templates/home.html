@@ -3,13 +3,16 @@
 {% block title %}Home{% endblock %} 
 
 {% block content %}
-{% if messages %}
-{% for msg in messages %}
-<p style="background-color: green; color: blach; padding: 10px; border-radius: 5px;">
-    {{ msg }}
-</p>
-{% endfor %}
-{% endif %}
+
+ {% if messages %}
+                {% for msg in messages %}
+                    <div id="django-message" class="alert alert-{{ message.tags }}">
+                    <p style="background-color: green; color: blach; padding: 10px; border-radius: 5px;">
+                    {{ msg }}
+                </p>
+                    </div>
+                {% endfor %}
+            {% endif %}
 <table style="margin:auto; width:90% ">
     <tr>
         <td>

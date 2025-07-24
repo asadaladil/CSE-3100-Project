@@ -10,13 +10,15 @@
             <form method="post" enctype="multipart/form-data" action='/forgot/'>
                 {% csrf_token %}
                 {{forms | crispy}} 
-                {% if messages %}
+                 {% if messages %}
                 {% for msg in messages %}
-                <p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
+                    <div id="django-message" class="alert alert-{{ message.tags }}">
+                    <p style="background-color: #a4361f; color: black; padding: 10px; border-radius: 5px;">
                     {{ msg }}
                 </p>
+                    </div>
                 {% endfor %}
-                {% endif %}
+            {% endif %}
                 <div style="text-align: center;">
                     <button type="submit" class="btn btn-success mt-3">Submit</button>
                 </div>

@@ -213,10 +213,13 @@ def profile(request):
             ac.postal=request.POST.get('postal')
             ac.Address=request.POST.get('Address')
             file_path=str(ac.photo)
-            if file_path and request.FILES.get('File'):
-                full_path=os.path.join(settings.MEDIA_ROOT, file_path)
-                if os.path.exists(full_path):
-                    os.remove(full_path)
+            try:
+                if file_path and request.FILES.get('File'):
+                    full_path=os.path.join(settings.MEDIA_ROOT, file_path)
+                    if os.path.exists(full_path):
+                        os.remove(full_path)
+            except:
+                pass
             if request.FILES.get('File'):
                 ac.photo=request.FILES.get('File')
             ac.user.save()
